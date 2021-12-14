@@ -1,0 +1,23 @@
+type Pipelines @aws_api_key {
+    pipelines: [Pipeline]!
+    nextPageToken: String!
+}
+
+type Pipeline @aws_api_key {
+    id: ID!
+    projectSlug: String!
+    vcs: VCS!
+}
+
+type VCS @aws_api_key {
+    providerName: String!
+    targetRepositoryUrl: String!
+    branch: String!
+    revision: String!
+    tag: String!
+}
+
+type Query {
+    getPipelines(nextToken: String): Pipelines
+        @aws_api_key
+}

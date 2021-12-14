@@ -1,21 +1,32 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
-import { CircleciDashboardStack } from '../lib/circleci-dashboard-stack';
+import { CircleciDashboardBackendStack } from '../lib/circleci-dashboard-backend';
+import { CircleciDashboardFrontendStack } from '../lib/circleci-dashboard-frontend';
+
+export const NONPRODUCTION_OLD_ACCOUNT_ID = '005840164515';
+export const NONPRODUCTION_ACCOUNT_ID= '740654597456' // Where the tote.digital certificate lives
+
+const ROOT_DOMAIN = 'tote.digital';
+
+const DOMAIN_NAME = `circleci-dashboard.${ROOT_DOMAIN}`;
+const NONPRODUCTION_CERTIFICATE_ARN = `arn:aws:acm:us-east-1:${NONPRODUCTION_ACCOUNT_ID}:certificate/7fc70bcb-85b2-415b-828b-44cb0a85adc3`;
 
 const app = new cdk.App();
-new CircleciDashboardStack(app, 'CircleciDashboardStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+new CircleciDashboardBackendStack(app, 'circleci-dashboard-backend-stack', {
+  env: {
+    region: process.env.AWS_DEFAULT_REGION || 'eu-west-2', 
+    account: process.env.AWS_ACCOUNT_ID || NONPRODUCTION_ACCOUNT_ID
+  }
+});
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
-
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+new CircleciDashboardFrontendStack(app, 'circleci-dashboard-frontend-stack', {
+  rootDomain: ROOT_DOMAIN,
+  rootDomainCertificate: NONPRODUCTION_CERTIFICATE_ARN,
+  domainName: DOMAIN_NAME,
+  env: {
+    region: process.env.AWS_DEFAULT_REGION || 'eu-west-2', 
+    account: process.env.AWS_ACCOUNT_ID || NONPRODUCTION_ACCOUNT_ID
+  }
 });
